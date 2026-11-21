@@ -188,6 +188,22 @@ html.locked .wrap{display:none;}
 .check-result.ok{background:#E7F8EE;color:#137A3F;border-color:#9ADBB4;}
 .check-result.bad{background:#FDECEC;color:#B42318;border-color:#F5B5B0;}
 @media (prefers-color-scheme: dark){ .check-result.ok{background:#123324;color:#7BE3A2;border-color:#1F5C3A;} .check-result.bad{background:#3A1D24;color:#FFB4A8;border-color:#6E2B33;} }
+/* ===== تبويب «الأكواد اللي تم توليدها» (سجل السحابة) ===== */
+.reg-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.reg-summary span{background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:900;color:var(--ink);}
+.reg-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:430px;overflow-y:auto;}
+.reg-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:9px 10px;}
+.reg-code{direction:ltr;font-family:'Baloo 2',monospace,sans-serif;font-weight:800;font-size:17px;letter-spacing:1px;color:var(--ink);}
+.reg-serial{font-size:12.5px;font-weight:800;color:var(--muted);}
+.reg-badge{border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:900;border:2px solid;}
+.reg-badge.unused{background:#E7F8EE;color:#137A3F;border-color:#9ADBB4;}
+.reg-badge.used{background:#FFF3DC;color:#9A6206;border-color:#F2CE84;}
+@media (prefers-color-scheme: dark){ .reg-badge.unused{background:#123324;color:#7BE3A2;border-color:#1F5C3A;} .reg-badge.used{background:#3A2C10;color:#FFD98A;border-color:#6E5518;} }
+.reg-dates{flex-basis:100%;font-size:12.5px;font-weight:700;color:var(--muted);line-height:1.7;}
+.reg-del{margin-inline-start:auto;background:#FDECEC;color:#B42318;border:2px solid #F5B5B0;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:900;padding:7px 14px;cursor:pointer;}
+.reg-del.armed{background:#B42318;color:#fff;border-color:#B42318;font-size:12.5px;}
+.reg-del:disabled{opacity:.6;cursor:wait;}
+@media (prefers-color-scheme: dark){ .reg-del{background:#3A1D24;color:#FFB4A8;border-color:#6E2B33;} .reg-del.armed{background:#B42318;color:#fff;border-color:#B42318;} }
 /* ===== شاشة اللعب الكاملة + بوابة بداية اللعبة ===== */
 .start-overlay{position:absolute;inset:0;background:rgba(16,32,44,.62);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px;}
 .start-card{background:var(--card);border-radius:24px;padding:22px 18px;text-align:center;width:100%;max-width:330px;box-shadow:var(--shadow);border:3px solid var(--sun);}
@@ -340,12 +356,36 @@ try{ if(!localStorage.getItem("eg_gate_code")){ document.documentElement.classLi
       </div>
     </div>
     <div class="admin-card">
+      <h4>تفعيل الأكواد اللي اتولّدت قبل كده</h4>
+      <p class="hint" style="text-align:right;margin-top:0;">لو ولّدت أكواد قبل ربط الموقع بالسحابة، اكتب مدى الأرقام التسلسلية بتاعتها وفعّلها من هنا — هتتحفظ في السحابة وتشتغل على طول. أي كود موجود في السحابة أصلًا (أو اتفعّل على جهاز طالب) هيتسيب زي ما هو من غير ما يتغيّر.</p>
+      <div class="admin-row">
+        <div class="admin-field">
+          <label class="admin-label" for="impFrom">من مسلسل</label>
+          <input class="admin-input" id="impFrom" type="number" inputmode="numeric" min="1" max="999999" />
+        </div>
+        <div class="admin-field">
+          <label class="admin-label" for="impTo">إلى مسلسل</label>
+          <input class="admin-input" id="impTo" type="number" inputmode="numeric" min="1" max="999999" />
+        </div>
+      </div>
+      <button type="button" class="btn-main" id="impBtn" style="width:100%;margin-top:14px;">فعّل</button>
+      <p class="admin-msg bad hidden" id="impErr"></p>
+      <p class="admin-msg ok hidden" id="impDone"></p>
+    </div>
+    <div class="admin-card">
       <h4>فحص كود</h4>
       <p class="hint" style="text-align:right;margin-top:0;">اكتب أي كود عشان تعرف نوعه وصلاحيته.</p>
       <label class="admin-label" for="checkInput">الكود</label>
       <input class="admin-input code" id="checkInput" type="text" placeholder="eg______" autocomplete="off" autocapitalize="off" spellcheck="false" />
       <button type="button" class="btn-main" id="checkBtn" style="width:100%;margin-top:12px;">افحص الكود</button>
       <p class="check-result" id="checkResult"></p>
+    </div>
+    <div class="admin-card">
+      <h4>الأكواد اللي تم توليدها</h4>
+      <p class="hint" style="text-align:right;margin-top:0;">كل الأكواد المحفوظة في السحابة وحالة كل كود — حذف أي كود من هنا بيخرّج الجهاز اللي دخّل بيه فورًا، حتى لو الكود محفوظ في متصفحه.</p>
+      <div class="reg-summary" id="regSummary"><span>جاري تحميل الأكواد من السحابة…</span></div>
+      <p class="admin-msg bad hidden" id="regErr"></p>
+      <div class="reg-list" id="regList"></div>
     </div>
   </section>
 </div>
@@ -5855,6 +5895,8 @@ setupCanvas();
 });
 buildHome(); updateTotal();
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
 /* ============ بوابة الدخول: القبول بصيغة التوليد الخوارزمية أو كود الماستر (بصمة SHA-256 فقط) ============ */
 var EG_MASTER_HASH="825b54e2c3b5fc2c";
@@ -5955,31 +5997,130 @@ function egValid(code){
   if(egIsMasterCode(code)) return true;
   return egFormulaValid(code);
 }
+/* ============ ربط الأكواد بالسحابة (Firebase / Firestore) ============ */
+var EG_FIREBASE_CONFIG={
+  apiKey:"AIzaSyBLtoVSTH_ETC_Y9GwFTeduy1Tfpmo2CcQ",
+  authDomain:"english-games-codes.firebaseapp.com",
+  projectId:"english-games-codes",
+  storageBucket:"english-games-codes.firebasestorage.app",
+  messagingSenderId:"129464461619",
+  appId:"1:129464461619:web:20096ad700a70e3f0a3646"
+};
+var egDb=null;
+try{
+  if(window.firebase && firebase.initializeApp && firebase.firestore){
+    firebase.initializeApp(EG_FIREBASE_CONFIG);
+    egDb=firebase.firestore();
+  }
+}catch(e){ egDb=null; }
+function egServerTs(){ return firebase.firestore.FieldValue.serverTimestamp(); }
+function egCodeRef(code){ return egDb.collection("codes").doc(code); }
+/* معرّف الجهاز: بيتولّد مرة واحدة وبيفضل ثابت على الجهاز */
+var EG_DEVICE_KEY="eg_device_id";
+function egUuid(){
+  if(window.crypto && crypto.randomUUID){ try{ return crypto.randomUUID(); }catch(e){} }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){
+    var r=(Math.random()*16)|0, v=(c==="x")? r : ((r&0x3)|0x8);
+    return v.toString(16);
+  });
+}
+function egDeviceId(){
+  try{
+    var d=localStorage.getItem(EG_DEVICE_KEY);
+    if(d) return d;
+    d=egUuid();
+    localStorage.setItem(EG_DEVICE_KEY,d);
+    return d;
+  }catch(e){ return "volatile-device"; }
+}
+/* مستمع حي على كود الطالب: حذف الكود أو تغيير جهازه = خروج فوري */
+var egUnsub=null;
+function egDetachListener(){ if(egUnsub){ try{ egUnsub(); }catch(e){} egUnsub=null; } }
+function egForceLock(msg){
+  egDetachListener();
+  try{ localStorage.removeItem(EG_GATE_KEY); }catch(e){}
+  try{ if(typeof stopLoops==="function") stopLoops(); }catch(e){}
+  try{ G=null; }catch(e){}
+  try{ if(typeof exitFS==="function") exitFS(); }catch(e){}
+  try{ if(typeof show==="function") show("view-home"); }catch(e){}
+  document.documentElement.classList.add("locked");
+  egRefreshMasterUI();
+  var err=document.getElementById("gateErr"), input=document.getElementById("gateInput");
+  if(err){ err.textContent=msg; err.classList.add("show"); }
+  if(input){ input.value=""; setTimeout(function(){ try{ input.focus(); }catch(e){} },80); }
+  window.scrollTo(0,0);
+}
+function egAttachListener(code){
+  egDetachListener();
+  if(!egDb || !code) return;
+  try{
+    egUnsub=egCodeRef(code).onSnapshot(function(snap){
+      if(!snap.exists || !snap.data() || snap.data().deviceId!==egDeviceId()){
+        egForceLock("تم إيقاف هذا الكود");
+      }
+    },function(){ /* خطأ مؤقت في الاتصال: إعادة التحقق عند التحميل الجاي هتصلّح الحالة */ });
+  }catch(e){}
+}
 (function(){
   var gate=document.getElementById("gate"), form=document.getElementById("gateForm"),
       input=document.getElementById("gateInput"), err=document.getElementById("gateErr");
   /* كود محفوظ غير صالح = ارجع لشاشة الدخول */
   var stored0=egGetStored();
-  if(stored0 && !egValid(stored0)){ try{ localStorage.removeItem(EG_GATE_KEY); }catch(e){} document.documentElement.classList.add("locked"); }
+  if(stored0 && !egValid(stored0)){ try{ localStorage.removeItem(EG_GATE_KEY); }catch(e){} document.documentElement.classList.add("locked"); stored0=""; }
   egRefreshMasterUI();
+  /* إعادة تحقق سحابية من الكود المحفوظ عند كل تحميل (أكواد الطلاب فقط — الماستر محلي) */
+  if(stored0 && !egIsMasterCode(stored0)){
+    if(egDb){
+      egCodeRef(stored0).get().then(function(snap){
+        if(!snap.exists || !snap.data() || snap.data().deviceId!==egDeviceId()){
+          egForceLock("تم إيقاف هذا الكود");
+        }else{
+          egAttachListener(stored0);
+        }
+      }).catch(function(){
+        /* مفيش اتصال: الدخول مسموح المرة دي، والمستمع الحي هيصلّح الحالة أول ما الاتصال يرجع */
+        egAttachListener(stored0);
+      });
+    }
+  }
   if(document.documentElement.classList.contains("locked") && input){ setTimeout(function(){ try{ input.focus(); }catch(e){} },350); }
+  function egUnlock(code,isMaster){
+    try{ localStorage.setItem(EG_GATE_KEY,code); }catch(e){}
+    err.classList.remove("show");
+    egRefreshMasterUI();
+    if(!isMaster) egAttachListener(code);
+    gate.classList.add("opening");
+    setTimeout(function(){ document.documentElement.classList.remove("locked"); gate.classList.remove("opening"); window.scrollTo(0,0); },480);
+  }
   form.addEventListener("submit",function(ev){
     ev.preventDefault();
     var code=egNormalize(input.value);
-    if(egValid(code)){
-      try{ localStorage.setItem(EG_GATE_KEY,code); }catch(e){}
-      err.classList.remove("show");
-      egRefreshMasterUI();
-      gate.classList.add("opening");
-      setTimeout(function(){ document.documentElement.classList.remove("locked"); gate.classList.remove("opening"); window.scrollTo(0,0); },480);
-    }else{
+    function reject(msg){
+      err.textContent=msg;
       err.classList.add("show");
       gate.classList.remove("shake"); void gate.offsetWidth; gate.classList.add("shake");
       try{ input.select(); }catch(e){}
     }
+    if(!egValid(code)){ reject("الكود غير صحيح، تأكد منه وحاول مرة أخرى"); return; }
+    if(egIsMasterCode(code)){ egUnlock(code,true); return; }
+    /* كود طالب: لازم يكون موجود في السحابة ومتفعّل على الجهاز ده بس */
+    if(!egDb){ reject("مفيش اتصال بالإنترنت — جرّب تاني وانت متصل"); return; }
+    var btn=form.querySelector(".gate-btn"), oldTxt=btn? btn.textContent : "";
+    if(btn){ btn.disabled=true; btn.textContent="جاري التحقق…"; }
+    function done(){ if(btn){ btn.disabled=false; btn.textContent=oldTxt; } }
+    egCodeRef(code).get().then(function(snap){
+      if(!snap.exists){ done(); reject("الكود ده مش موجود — الأكواد اللي بتفتح هي اللي اتولّدت من صفحة التوليد بس"); return; }
+      var d=snap.data()||{}, dev=egDeviceId();
+      if(d.deviceId && d.deviceId!==dev){ done(); reject("الكود ده اتفعّل على جهاز تاني — كل كود لجهاز واحد بس"); return; }
+      var upd=(d.deviceId===dev)
+        ? { lastUsedAt: egServerTs() }
+        : { deviceId: dev, usedCount: 1, firstUsedAt: egServerTs(), lastUsedAt: egServerTs() };
+      snap.ref.update(upd).then(function(){ done(); egUnlock(code,false); })
+      .catch(function(){ done(); reject("مفيش اتصال بالإنترنت — جرّب تاني وانت متصل"); });
+    }).catch(function(){ done(); reject("مفيش اتصال بالإنترنت — جرّب تاني وانت متصل"); });
   });
   var cc=document.getElementById("changeCode");
-  if(cc){ cc.addEventListener("click",function(){ try{ localStorage.removeItem(EG_GATE_KEY); }catch(e){} location.reload(); }); }
+  if(cc){ cc.addEventListener("click",function(){ egDetachListener(); try{ localStorage.removeItem(EG_GATE_KEY); }catch(e){} location.reload(); }); }
 
   /* ===== صفحة توليد الأكواد (الماستر فقط) ===== */
   var masterBtn=document.getElementById("masterEntry");
@@ -5990,7 +6131,12 @@ function egValid(code){
       genCopy=document.getElementById("genCopy"), genDownload=document.getElementById("genDownload"),
       genCopied=document.getElementById("genCopied"),
       checkInput=document.getElementById("checkInput"), checkBtn=document.getElementById("checkBtn"),
-      checkResult=document.getElementById("checkResult"), adminBack=document.getElementById("adminBack");
+      checkResult=document.getElementById("checkResult"), adminBack=document.getElementById("adminBack"),
+      regList=document.getElementById("regList"), regSummary=document.getElementById("regSummary"),
+      regErr=document.getElementById("regErr"),
+      impFrom=document.getElementById("impFrom"), impTo=document.getElementById("impTo"),
+      impBtn=document.getElementById("impBtn"), impErr=document.getElementById("impErr"),
+      impDone=document.getElementById("impDone");
   var egLastGen=[], egLastGenStart=0;
   function egGenLast(){ try{ var n=parseInt(localStorage.getItem(EG_GEN_KEY)||"0",10); return isNaN(n)?0:n; }catch(e){ return 0; } }
   function egSyncGenStart(){
@@ -5998,12 +6144,114 @@ function egValid(code){
     if(genStart) genStart.value=String(last+1);
     if(genInfo) genInfo.textContent = last>0 ? ("آخر رقم تسلسلي اتولّد من الأداة: "+last+" — الأكواد الجديدة هتبدأ من "+(last+1)+" تلقائيًا، وتقدر تعدّل البداية بنفسك.") : "لسه مفيش أكواد اتولّدت من الأداة — التوليد هيبدأ من الرقم التسلسلي ١.";
   }
+  /* ===== تبويب «الأكواد اللي تم توليدها»: سجل حي من السحابة ===== */
+  var egRegUnsub=null;
+  function egFmtDate(ts){
+    if(!ts) return "—";
+    try{
+      var d=(ts.toDate)? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString("ar-EG")+" • "+d.toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"});
+    }catch(e){ return "—"; }
+  }
+  function egRegDelete(btn){
+    var code=btn.getAttribute("data-del");
+    if(btn.getAttribute("data-armed")!=="1"){
+      btn.setAttribute("data-armed","1");
+      btn.classList.add("armed");
+      btn.textContent="متأكد؟ حذف الكود هيخرّج الجهاز اللي دخّل بيه فورًا — دوس تاني للحذف";
+      setTimeout(function(){
+        if(btn.isConnected && btn.getAttribute("data-armed")==="1"){
+          btn.removeAttribute("data-armed"); btn.classList.remove("armed"); btn.textContent="حذف";
+        }
+      },6000);
+      return;
+    }
+    btn.disabled=true; btn.textContent="جاري الحذف…";
+    egCodeRef(code).delete().catch(function(){
+      btn.disabled=false; btn.textContent="حذف";
+      if(regErr){ regErr.textContent="تعذّر حذف الكود «"+code+"» — تأكد من الاتصال وحاول تاني."; regErr.classList.remove("hidden"); }
+    });
+    /* نجاح الحذف بيبان لوحده: المستمع الحي بيحدّث القايمة، وجهاز الطالب بيخرج فورًا بمستمعه */
+  }
+  function egStartRegistry(){
+    if(!regList) return;
+    if(!egDb){
+      if(regErr){ regErr.textContent="السحابة مش متصلة دلوقتي — سجل الأكواد هيظهر أول ما الاتصال يرجع."; regErr.classList.remove("hidden"); }
+      if(regSummary) regSummary.innerHTML="<span>مفيش اتصال بالسحابة</span>";
+      return;
+    }
+    if(egRegUnsub) return;
+    egRegUnsub=egDb.collection("codes").orderBy("serial").onSnapshot(function(qs){
+      if(regErr) regErr.classList.add("hidden");
+      var total=0, used=0, html="";
+      qs.forEach(function(doc){
+        total++;
+        var d=doc.data()||{}, isUsed=!!d.deviceId;
+        if(isUsed) used++;
+        var dates="";
+        if(isUsed){
+          dates='<span class="reg-dates">أول استخدام: '+egFmtDate(d.firstUsedAt)+' — آخر استخدام: '+egFmtDate(d.lastUsedAt)+'</span>';
+        }
+        html+='<div class="reg-row"><span class="reg-code">'+doc.id+'</span>'
+          +'<span class="reg-serial">تسلسلي '+(d.serial!=null? d.serial : "؟")+'</span>'
+          +'<span class="reg-badge '+(isUsed?"used":"unused")+'">'+(isUsed?"مُستخدم":"لم يُستخدم بعد")+'</span>'
+          +dates
+          +'<button type="button" class="reg-del" data-del="'+doc.id+'">حذف</button></div>';
+      });
+      if(regSummary) regSummary.innerHTML="<span>كل الأكواد: "+total+"</span><span>مُستخدم: "+used+"</span><span>لسه ما اتستخدمش: "+(total-used)+"</span>";
+      regList.innerHTML= html || '<p class="admin-msg">لسه مفيش أكواد محفوظة في السحابة — ولّد أكواد جديدة من فوق وهتظهر هنا على طول.</p>';
+      var dels=regList.querySelectorAll("[data-del]");
+      for(var i=0;i<dels.length;i++){ dels[i].addEventListener("click",function(){ egRegDelete(this); }); }
+    },function(){
+      if(regErr){ regErr.textContent="تعذّر تحميل الأكواد من السحابة — تأكد من الاتصال بالإنترنت."; regErr.classList.remove("hidden"); }
+    });
+  }
   if(masterBtn){ masterBtn.addEventListener("click",function(){
     if(!egIsMasterCode(egGetStored())) return;
     egSyncGenStart();
+    egRefreshCounter();
+    egStartRegistry();
     if(typeof show==="function") show("view-admin");
   }); }
   if(adminBack){ adminBack.addEventListener("click",function(){ if(typeof show==="function") show("view-home"); }); }
+  function egWriteCodesToCloud(codes,startSerial){
+    function writeChunk(from){
+      if(from>=codes.length) return Promise.resolve();
+      var b=egDb.batch(), to=Math.min(from+400,codes.length);
+      for(var i=from;i<to;i++){
+        b.set(egCodeRef(codes[i]),{ serial:startSerial+i, createdAt:egServerTs(), deviceId:null, usedCount:0, firstUsedAt:null, lastUsedAt:null });
+      }
+      return b.commit().then(function(){ return writeChunk(to); });
+    }
+    return writeChunk(0);
+  }
+  /* العدّاد التسلسلي المشترك في السحابة: التوليد من هنا أو من أي أداة تانية (زي بوت البيع) بياخد أرقام من نفس العدّاد فمفيش تصادم أبدًا.
+     ملحوظة: قواعد Firestore المنشورة بتسمح بمجموعة codes بس، فالعدّاد محفوظ كمستند خاص جواها (meta-counter) —
+     مش بيظهر في سجل الأكواد أبدًا (معندوش حقل serial فالاستعلام المرتب بالتسلسلي بيستبعده)، ومستحيل يبقى كود دخول (بيفشل فحص الصيغة). */
+  function egCounterRef(){ return egCodeRef("meta-counter"); }
+  function egAllocateSerials(requestedStart,count){
+    return egDb.runTransaction(function(tx){
+      return tx.get(egCounterRef()).then(function(snap){
+        var last;
+        if(snap.exists){ last=(snap.data()||{}).lastSerial||0; }
+        else { last=egGenLast(); /* أول تشغيل: العدّاد بيبدأ من آخر رقم معروف على الجهاز ده */ }
+        var start=Math.max(last+1, requestedStart||1);
+        if(start+count-1>999999) throw new Error("overflow");
+        tx.set(egCounterRef(),{ lastSerial:start+count-1 });
+        return start;
+      });
+    });
+  }
+  function egRefreshCounter(){
+    if(!egDb) return;
+    egCounterRef().get().then(function(snap){
+      if(snap.exists){
+        var ls=(snap.data()||{}).lastSerial||0;
+        try{ localStorage.setItem(EG_GEN_KEY,String(ls)); }catch(e){}
+        egSyncGenStart();
+      }
+    }).catch(function(){});
+  }
   if(genBtn){ genBtn.addEventListener("click",function(){
     if(!egIsMasterCode(egGetStored())) return;
     var start=parseInt(genStart.value,10), count=parseInt(genCount.value,10);
@@ -6012,17 +6260,75 @@ function egValid(code){
     if(isNaN(start)||start<1||start>999999){ fail("اكتب رقم تسلسلي صحيح للبداية (من ١ لحد ٩٩٩٩٩٩)."); return; }
     if(isNaN(count)||count<1||count>5000){ fail("اكتب عدد أكواد صحيح (من ١ لحد ٥٠٠٠ في المرة الواحدة)."); return; }
     if(start+count-1>999999){ fail("الأكواد المطلوبة هتعدّي الحد الأقصى للرقم التسلسلي (٩٩٩٩٩٩) — قلّل العدد أو ابدأ من رقم أصغر."); return; }
-    egLastGen=[]; egLastGenStart=start;
-    var html="";
-    for(var i=0;i<count;i++){ var c=egCodeForSerial(start+i); egLastGen.push(c); html+="<li>"+c+"</li>"; }
-    genList.innerHTML=html;
-    var lastSerial=start+count-1;
-    try{ localStorage.setItem(EG_GEN_KEY,String(Math.max(egGenLast(),lastSerial))); }catch(e){}
-    genDone.textContent="اتولّد "+count+" كود بنجاح — من الرقم التسلسلي "+start+" لحد "+lastSerial+".";
-    genWrap.classList.remove("hidden");
-    genCopied.classList.add("hidden");
-    egSyncGenStart();
-    genStart.value=String(lastSerial+1);
+    if(!egDb){ fail("مفيش اتصال بالسحابة دلوقتي — الأكواد لازم تتحفظ في السحابة عشان تشتغل، اتصل بالإنترنت وحاول تاني."); return; }
+    genBtn.disabled=true; genBtn.textContent="جاري التوليد والحفظ في السحابة…";
+    egAllocateSerials(start,count).then(function(allocStart){
+      start=allocStart;
+      var codes=[];
+      for(var i=0;i<count;i++){ codes.push(egCodeForSerial(start+i)); }
+      var lastSerial=start+count-1;
+      return egWriteCodesToCloud(codes,start).then(function(){
+        genBtn.disabled=false; genBtn.textContent="ولّد الأكواد";
+        egLastGen=codes.slice(); egLastGenStart=start;
+        var html="";
+        for(var i=0;i<egLastGen.length;i++){ html+="<li>"+egLastGen[i]+"</li>"; }
+        genList.innerHTML=html;
+        try{ localStorage.setItem(EG_GEN_KEY,String(Math.max(egGenLast(),lastSerial))); }catch(e){}
+        genDone.textContent="اتولّد "+count+" كود بنجاح واتحفظوا في السحابة واتفعّلوا — من الرقم التسلسلي "+start+" لحد "+lastSerial+". هتلاقيهم تحت في «الأكواد اللي تم توليدها».";
+        genWrap.classList.remove("hidden");
+        genCopied.classList.add("hidden");
+        egSyncGenStart();
+        genStart.value=String(lastSerial+1);
+      });
+    }).catch(function(e){
+      genBtn.disabled=false; genBtn.textContent="ولّد الأكواد";
+      if(e && e.message==="overflow"){ fail("الأكواد المطلوبة هتعدّي الحد الأقصى للرقم التسلسلي (٩٩٩٩٩٩) — قلّل العدد."); return; }
+      fail("الأكواد ما اتحفظتش في السحابة (مشكلة في الاتصال) — وبالتالي لسه مش مفعّلة ومش هتفتح الموقع. صلّح الاتصال وولّد تاني.");
+    });
+  }); }
+  /* ===== تفعيل الأكواد اللي اتولّدت قبل ربط السحابة (بمدى الأرقام التسلسلية) ===== */
+  if(impBtn){ impBtn.addEventListener("click",function(){
+    if(!egIsMasterCode(egGetStored())) return;
+    impErr.classList.add("hidden"); impDone.classList.add("hidden");
+    function fail(msg){ impErr.textContent=msg; impErr.classList.remove("hidden"); }
+    var from=parseInt(impFrom.value,10), to=parseInt(impTo.value,10);
+    if(isNaN(from)||isNaN(to)||from<1||to>999999||from>to){ fail("اكتب مدى صحيح: «من مسلسل» أصغر من أو يساوي «إلى مسلسل»، وكلهم بين ١ و٩٩٩٩٩٩."); return; }
+    if(to-from+1>5000){ fail("المدى كبير — فعّل لحد ٥٠٠٠ كود في المرة الواحدة."); return; }
+    if(!egDb){ fail("مفيش اتصال بالسحابة دلوقتي — جرّب تاني وانت متصل بالإنترنت."); return; }
+    impBtn.disabled=true; impBtn.textContent="جاري التفعيل…";
+    var created=0, present=0;
+    function chunk(fromSerial){
+      if(fromSerial>to) return Promise.resolve();
+      var part=[], s;
+      for(s=fromSerial; s<=Math.min(fromSerial+199,to); s++) part.push(s);
+      var gets=part.map(function(ser){ return egCodeRef(egCodeForSerial(ser)).get(); });
+      return Promise.all(gets).then(function(snaps){
+        var batch=egDb.batch(), n=0;
+        snaps.forEach(function(snap,i){
+          if(snap.exists){ present++; }
+          else { batch.set(snap.ref,{ serial:part[i], createdAt:egServerTs(), deviceId:null, usedCount:0, firstUsedAt:null, lastUsedAt:null }); created++; n++; }
+        });
+        return n? batch.commit() : null;
+      }).then(function(){ return chunk(fromSerial+200); });
+    }
+    chunk(from).then(function(){
+      /* رفع العدّاد المشترك لحد آخر مسلسل في المدى على الأقل، عشان التوليد الجاي ما يعيدش نفس الأرقام */
+      return egDb.runTransaction(function(tx){
+        return tx.get(egCounterRef()).then(function(snap){
+          var last=snap.exists? ((snap.data()||{}).lastSerial||0) : egGenLast();
+          if(to>last){ tx.set(egCounterRef(),{ lastSerial:to }); last=to; }
+          try{ localStorage.setItem(EG_GEN_KEY,String(Math.max(egGenLast(),last))); }catch(e){}
+        });
+      });
+    }).then(function(){
+      impBtn.disabled=false; impBtn.textContent="فعّل";
+      impDone.textContent="تمام: اتفعّل "+created+" كود جديد في السحابة، و"+present+" كود كانوا موجودين أصلًا واتسابوا زي ما هما من غير تغيير. الأكواد المفعّلة باينة تحت في «الأكواد اللي تم توليدها» وتشتغل على طول.";
+      impDone.classList.remove("hidden");
+      egSyncGenStart();
+    }).catch(function(){
+      impBtn.disabled=false; impBtn.textContent="فعّل";
+      fail("حصلت مشكلة في الاتصال أثناء التفعيل — اللي اتحفظ فضل محفوظ، وجرّب تاني عشان تكمّل الباقي (الكود الموجود هيتخطى لوحده).");
+    });
   }); }
   function egCopyText(t,done){
     function fallback(){ var ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); if(done) done(); }
@@ -6047,7 +6353,18 @@ function egValid(code){
     if(!code){ checkResult.classList.add("bad"); checkResult.textContent="اكتب كود الأول عشان أفحصه."; return; }
     var d=egDescribe(code);
     if(d.type==="master"){ checkResult.classList.add("ok"); checkResult.textContent="كود صحيح — ده كود الماستر الخاص بيك، بيفتح الموقع وصفحة توليد الأكواد."; }
-    else if(d.type==="formula"){ checkResult.classList.add("ok"); checkResult.textContent="كود صحيح — كود مولّد بصيغة التوليد، والرقم التسلسلي بتاعه: "+d.serial+"."; }
+    else if(d.type==="formula"){
+      checkResult.classList.add("ok");
+      var base="كود بصيغة التوليد، والرقم التسلسلي بتاعه: "+d.serial+".";
+      if(!egDb){ checkResult.textContent=base+" (السحابة مش متصلة — تعذّر فحص حالته دلوقتي.)"; return; }
+      checkResult.textContent=base+" جاري فحص حالته في السحابة…";
+      egCodeRef(code).get().then(function(snap){
+        if(!snap.exists){ checkResult.classList.remove("ok"); checkResult.classList.add("bad"); checkResult.textContent=base+" حالته في السحابة: مش موجود — ما اتولّدش من صفحة التوليد (أو اتحذف)، ومش هيفتح الموقع."; return; }
+        var dd=snap.data()||{};
+        if(dd.deviceId){ checkResult.textContent=base+" حالته في السحابة: مُستخدم — اتفعّل على جهاز أول مرة بتاريخ "+egFmtDate(dd.firstUsedAt)+"، وآخر استخدام "+egFmtDate(dd.lastUsedAt)+"."; }
+        else { checkResult.textContent=base+" حالته في السحابة: موجود ولسه ما اتستخدمش — جاهز يتفعّل على أول جهاز يدخّله."; }
+      }).catch(function(){ checkResult.textContent=base+" (تعذّر فحص حالته في السحابة — مفيش اتصال بالإنترنت.)"; });
+    }
     else { checkResult.classList.add("bad"); checkResult.textContent="الكود ده غير صحيح — مش ماستر ولا بيطابق صيغة التوليد، ومش هيفتح الموقع."; }
   }
   if(checkBtn){ checkBtn.addEventListener("click",egRunCheck); }
